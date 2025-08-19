@@ -21,9 +21,8 @@ export default function AddDetailsPage() {
   useEffect(() => {
     try {
       const sp = new URLSearchParams(window.location.search);
-      const idFromQuery = sp.get("userId") || "";
-      const idFromLS = localStorage.getItem("userId") || "";
-      setUserId(idFromQuery || idFromLS);
+      const idFromLS = localStorage.getItem("UserID") || "";
+      setUserId( idFromLS);
     } catch {
       // ignore
     }

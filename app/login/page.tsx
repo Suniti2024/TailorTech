@@ -155,10 +155,12 @@ export default function LoginPage() {
       });
 
       const data = await res.json();
+console.log(data);
 
       if (res.ok) {
         // ✅ Save the logged-in email in localStorage
         localStorage.setItem("loggedInEmail", email);
+        localStorage.setItem("UserID", data?.user?.userID);
 
         // Redirect after login success
         router.push("/dashboard"); 
