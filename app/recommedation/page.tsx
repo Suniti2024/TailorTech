@@ -61,7 +61,7 @@ export default function RecommendationPage() {
               </div>
               <div className="flex gap-3">
                 <Link
-                  href={`/tailor/${tailor._id}`}
+                  href={`/tailors/${tailor._id}`}
                   className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
                 >
                   View Profile

@@ -15,6 +15,9 @@ export default function AddDetailsPage() {
     fabricType: "",
     extraNotes: "",
     referenceImage: null as File | null,
+
+
+    
   });
 
   // Pick userId from ?userId=... or localStorage.userId (no auth required)
