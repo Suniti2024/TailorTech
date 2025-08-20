@@ -50,7 +50,7 @@ export default function ProfilePage() {
   useEffect(() => {
     const loggedInEmail = localStorage.getItem("loggedInEmail");
     if (!loggedInEmail) {
-      window.location.href = "/login";
+      window.location.href = "/profile";
       return;
     }
     fetchProfile(loggedInEmail);
