@@ -1,13 +1,21 @@
-
-
 "use client";
 
-import React, { useEffect, useState } from "react";
+import Link from "next/link";
+import { useEffect, useState } from "react";
 
-export default function AddDetailsPage() {
-  const [userId, setUserId] = useState<string>("");
-  const [submitting, setSubmitting] = useState(false);
+export default function StepperForm() {
+  interface Tailor {
+    _id: string;
+    name: string;
+    email: string;
+    address: string;
+    experience: number;
+  }
 
+  const [step, setStep] = useState(1);
+  const [tailors, setTailors] = useState<Tailor[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedTailor, setSelectedTailor] = useState<any>(null);
   const [formData, setFormData] = useState({
     kurtiLength: "",
     sleeveType: "",
@@ -15,232 +23,426 @@ export default function AddDetailsPage() {
     fabricType: "",
     extraNotes: "",
     referenceImage: null as File | null,
-
-
-    
+    chest: "",
+    waist: "",
+    hips: "",
+    length: "",
+    userID: "",
+    Status: "Pending",
+    TailorName: "",
+    TailorID: "",
+    TailorEmail: "",
+    TailorPhone: "",
+    Price: "Not Assigned",
+    TailorAddress: "",
   });
-
-  // Pick userId from ?userId=... or localStorage.userId (no auth required)
-  useEffect(() => {
-    try {
-      const sp = new URLSearchParams(window.location.search);
-      const idFromLS = localStorage.getItem("UserID") || "";
-      setUserId( idFromLS);
-    } catch {
-      // ignore
-    }
-  }, []);
 
   const handleChange = (
     e: React.ChangeEvent<
-      HTMLSelectElement | HTMLInputElement | HTMLTextAreaElement
+      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
     >
   ) => {
-    const { name, value, files } = e.target as HTMLInputElement;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: files ? files[0] : value,
-    }));
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (submitting) return;
-    setSubmitting(true);
-
-    try {
-      const payload = new FormData();
-      // attach userId if we have it
-      if (userId) payload.append("userId", userId);
-
-      payload.append("kurtiLength", formData.kurtiLength);
-      payload.append("sleeveType", formData.sleeveType);
-      payload.append("neckDesign", formData.neckDesign);
-      payload.append("fabricType", formData.fabricType);
-      payload.append("extraNotes", formData.extraNotes);
-      if (formData.referenceImage) {
-        payload.append("referenceImage", formData.referenceImage);
-      }
-
-      const res = await fetch("/api/add-details", {
-        method: "POST",
-        body: payload, // multipart/form-data; do NOT set Content-Type manually
-      });
-
-      const data = await res.json();
-
-      if (res.ok && data?.success) {
-        alert("Details saved successfully!");
-        setFormData({
-          kurtiLength: "",
-          sleeveType: "",
-          neckDesign: "",
-          fabricType: "",
-          extraNotes: "",
-          referenceImage: null,
-        });
-      } else {
-        alert(data?.message || "Something went wrong");
-      }
-    } catch (error) {
-      console.error(error);
-      alert("Error saving details");
-    } finally {
-      setSubmitting(false);
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      setFormData({ ...formData, referenceImage: e.target.files[0] });
     }
   };
 
+  const nextStep = () => setStep((prev) => prev + 1);
+  const prevStep = () => setStep((prev) => prev - 1);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    try {
+      // Build FormData for multipart/form-data
+      const data = new FormData();
+      Object.entries(formData).forEach(([key, value]) => {
+        if (value !== null) {
+          data.append(key, value as string | Blob);
+        }
+      });
+
+      const res = await fetch("/api/add-details", {
+        method: "POST",
+        body: data, // browser sets Content-Type automatically
+      });
+
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.message || "Failed to submit details");
+      }
+
+      const result = await res.json();
+      console.log("Server response:", result);
+
+      alert("Details submitted successfully ✅");
+    } catch (error: any) {
+      console.error("Submit error:", error);
+      alert(`❌ Error: ${error.message || "Something went wrong"}`);
+    }
+  };
+
+  useEffect(() => {
+    const idFromLS = localStorage.getItem("UserID");
+    if (idFromLS) {
+      setFormData((prev) => ({
+        ...prev,
+        userID: idFromLS,
+      }));
+    }
+
+    const fetchTailors = async () => {
+      try {
+        const res = await fetch("/api/recomm");
+        if (!res.ok) throw new Error("Failed to fetch tailors");
+        const data = await res.json();
+        setTailors(data);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchTailors();
+  }, []);
+
   return (
-    <div className="min-h-screen bg-gradient-to-b from-pink-50 to-pink-100 flex items-center justify-center p-4">
-      <form
-        onSubmit={handleSubmit}
-        className="bg-white shadow-lg rounded-2xl p-6 w-full max-w-lg font-sans"
-      >
-        <h1 className="text-2xl font-bold text-gray-800 mb-6 text-center">
-          Additional Dress Details
-        </h1>
+    <div className="max-w-2xl mx-auto p-8">
+      {/* Stepper Header */}
+      <div className="flex items-center justify-between mb-10">
+        {["Dress Details", "Measurements", "Tailor Selection", "Review"].map(
+          (label, index) => (
+            <div key={index} className="flex-1 text-center relative">
+              {/* Circle */}
+              <div
+                className={`w-10 h-10 rounded-full flex items-center justify-center mx-auto z-10
+              ${
+                step === index + 1
+                  ? "bg-black text-white"
+                  : step > index + 1
+                  ? "bg-green-500 text-white"
+                  : "bg-gray-200 text-gray-600"
+              }`}
+              >
+                {step > index + 1 ? "✓" : index + 1}
+              </div>
+              <p
+                className={`mt-2 text-sm font-medium ${
+                  step === index + 1 ? "text-black" : "text-gray-500"
+                }`}
+              >
+                {label}
+              </p>
+              {/* Connector Line */}
+              {index < 2 && (
+                <div
+                  className={`absolute top-5 left-1/2 w-full h-[2px] -z-10 
+                ${step > index + 1 ? "bg-green-500" : "bg-gray-300"}`}
+                ></div>
+              )}
+            </div>
+          )
+        )}
+      </div>
 
-        {/* Kurti Length */}
-        <label className="block mb-3">
-          <span className="text-gray-700 font-medium">Kurti Length</span>
-          <select
-            name="kurtiLength"
-            value={formData.kurtiLength}
-            onChange={handleChange}
-            className="mt-1 block w-full rounded-lg border border-gray-300 p-2 focus:ring-2 focus:ring-pink-400 focus:outline-none text-gray-800"
-          >
-            <option value="" className="text-gray-700">
-              Select length
-            </option>
-            <option value="full" className="text-gray-800">
-              Full
-            </option>
-            <option value="belowKnee" className="text-gray-800">
-              Below Knee
-            </option>
-            <option value="kneeLength" className="text-gray-800">
-              Knee Length
-            </option>
-            <option value="short" className="text-gray-800">
-              Short
-            </option>
-          </select>
-        </label>
+      {/* Form */}
+      <form className="space-y-6 bg-white shadow-lg p-6 rounded-2xl border">
+        {step === 1 && (
+          <div className="grid gap-4">
+            <div>
+              <label className="block font-medium">Kurti Length</label>
+              <select
+                name="kurtiLength"
+                value={formData.kurtiLength}
+                onChange={handleChange}
+                className="w-full border rounded-lg p-2 focus:ring-2 focus:ring-black"
+              >
+                <option value="">Select length</option>
+                <option value="short">Short</option>
+                <option value="medium">Medium</option>
+                <option value="long">Long</option>
+              </select>
+            </div>
+            <div>
+              <label className="block font-medium">Sleeve Type</label>
+              <select
+                name="sleeveType"
+                value={formData.sleeveType}
+                onChange={handleChange}
+                className="w-full border rounded-lg p-2 focus:ring-2 focus:ring-black"
+              >
+                <option value="">Select sleeve type</option>
+                <option value="full">Full</option>
+                <option value="half">Half</option>
+                <option value="sleeveless">Sleeveless</option>
+              </select>
+            </div>
+            <div>
+              <label className="block font-medium">Neck Design</label>
+              <select
+                name="neckDesign"
+                value={formData.neckDesign}
+                onChange={handleChange}
+                className="w-full border rounded-lg p-2 focus:ring-2 focus:ring-black"
+              >
+                <option value="">Select neck design</option>
+                <option value="round">Round</option>
+                <option value="vneck">V-Neck</option>
+                <option value="collar">Collar</option>
+              </select>
+            </div>
+            <div>
+              <label className="block font-medium">Fabric Type</label>
+              <select
+                name="fabricType"
+                value={formData.fabricType}
+                onChange={handleChange}
+                className="w-full border rounded-lg p-2 focus:ring-2 focus:ring-black"
+              >
+                <option value="">Select fabric</option>
+                <option value="cotton">Cotton</option>
+                <option value="silk">Silk</option>
+                <option value="linen">Linen</option>
+              </select>
+            </div>
+            <div>
+              <label className="block font-medium">Extra Notes</label>
+              <textarea
+                name="extraNotes"
+                value={formData.extraNotes}
+                onChange={handleChange}
+                className="w-full border rounded-lg p-2 focus:ring-2 focus:ring-black"
+                placeholder="Any additional instructions..."
+              />
+            </div>
+            <div>
+              <label className="block font-medium">Reference Image</label>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleFileChange}
+                className="w-full border rounded-lg p-2"
+              />
+            </div>
+          </div>
+        )}
 
-        {/* Sleeve Type */}
-        <label className="block mb-3">
-          <span className="text-gray-700 font-medium">Sleeve Type</span>
-          <select
-            name="sleeveType"
-            value={formData.sleeveType}
-            onChange={handleChange}
-            className="mt-1 block w-full rounded-lg border border-gray-300 p-2 focus:ring-2 focus:ring-pink-400 focus:outline-none text-gray-800"
-          >
-            <option value="" className="text-gray-700">
-              Select sleeve type
-            </option>
-            <option value="full" className="text-gray-800">
-              Full Sleeves
-            </option>
-            <option value="half" className="text-gray-800">
-              Half Sleeves
-            </option>
-            <option value="sleeveless" className="text-gray-800">
-              Sleeveless
-            </option>
-            <option value="threeFourth" className="text-gray-800">
-              3/4th Sleeves
-            </option>
-          </select>
-        </label>
+        {step === 2 && (
+          <div className="grid gap-4">
+            <div>
+              <label className="block font-medium">Chest (inches)</label>
+              <input
+                type="text"
+                name="chest"
+                value={formData.chest}
+                onChange={handleChange}
+                className="w-full border rounded-lg p-2 focus:ring-2 focus:ring-black"
+              />
+            </div>
+            <div>
+              <label className="block font-medium">Waist (inches)</label>
+              <input
+                type="text"
+                name="waist"
+                value={formData.waist}
+                onChange={handleChange}
+                className="w-full border rounded-lg p-2 focus:ring-2 focus:ring-black"
+              />
+            </div>
+            <div>
+              <label className="block font-medium">Hips (inches)</label>
+              <input
+                type="text"
+                name="hips"
+                value={formData.hips}
+                onChange={handleChange}
+                className="w-full border rounded-lg p-2 focus:ring-2 focus:ring-black"
+              />
+            </div>
+            <div>
+              <label className="block font-medium">Length (inches)</label>
+              <input
+                type="text"
+                name="length"
+                value={formData.length}
+                onChange={handleChange}
+                className="w-full border rounded-lg p-2 focus:ring-2 focus:ring-black"
+              />
+            </div>
+          </div>
+        )}
+        {step === 3 && (
+          <div className="max-w-4xl mx-auto p-6">
+            <h1 className="text-2xl font-bold mb-6">Tailor Recommendations</h1>
 
-        {/* Neck Design */}
-        <label className="block mb-3">
-          <span className="text-gray-700 font-medium">Neck Design</span>
-          <select
-            name="neckDesign"
-            value={formData.neckDesign}
-            onChange={handleChange}
-            className="mt-1 block w-full rounded-lg border border-gray-300 p-2 focus:ring-2 focus:ring-pink-400 focus:outline-none text-gray-800"
-          >
-            <option value="" className="text-gray-700">
-              Select neck design
-            </option>
-            <option value="round" className="text-gray-800">
-              Round Neck
-            </option>
-            <option value="vNeck" className="text-gray-800">
-              V-Neck
-            </option>
-            <option value="collar" className="text-gray-800">
-              Collar
-            </option>
-            <option value="boat" className="text-gray-800">
-              Boat Neck
-            </option>
-          </select>
-        </label>
+            {tailors.length === 0 ? (
+              <p>No tailors found.</p>
+            ) : (
+              <div className="space-y-4">
+                {tailors.map((tailor) => (
+                  <div
+                    key={tailor._id}
+                    className="border rounded-lg p-4 shadow-sm flex justify-between items-center"
+                  >
+                    <div>
+                      <h2 className="text-lg font-semibold">{tailor.name}</h2>
+                      <p className="text-sm text-gray-600">
+                        Location: {tailor.address}
+                      </p>
+                      <p className="text-sm text-gray-600">
+                        Experience: {tailor.experience} years
+                      </p>
+                    </div>
+                    <div className="flex gap-3">
+                      <Link
+                        target="_blank"
+                        href={`/tailors/${tailor._id}`}
+                        className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+                      >
+                        View Profile
+                      </Link>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setFormData((prev: any) => ({
+                            ...prev,
+                            TailorName: tailor.name,
+                            TailorID: tailor._id,
+                            TailorEmail: tailor.email,
+                            TailorPhone: tailor.phone,
+                            TailorAddress: tailor.address,
+                          }));
+                          setSelectedTailor(tailor); // store selected tailor
+                        }}
+                        className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
+                      >
+                        Select Tailor
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
 
-        {/* Fabric Type */}
-        <label className="block mb-3">
-          <span className="text-gray-700 font-medium">Fabric Type</span>
-          <select
-            name="fabricType"
-            value={formData.fabricType}
-            onChange={handleChange}
-            className="mt-1 block w-full rounded-lg border border-gray-300 p-2 focus:ring-2 focus:ring-pink-400 focus:outline-none text-gray-800"
-          >
-            <option value="" className="text-gray-700">
-              Select fabric
-            </option>
-            <option value="cotton" className="text-gray-800">
-              Cotton
-            </option>
-            <option value="silk" className="text-gray-800">
-              Silk
-            </option>
-            <option value="linen" className="text-gray-800">
-              Linen
-            </option>
-            <option value="georgette" className="text-gray-800">
-              Georgette
-            </option>
-          </select>
-        </label>
+            {/* Show selected tailor at the bottom */}
+            {selectedTailor && (
+              <div className="mt-8 border-t pt-6">
+                <h2 className="text-xl font-semibold mb-3">Selected Tailor</h2>
+                <div className="border rounded-lg p-4 bg-gray-50 shadow-md">
+                  <h3 className="text-lg font-bold">{selectedTailor.name}</h3>
+                  <p className="text-sm text-gray-700">
+                    Location: {selectedTailor.address}
+                  </p>
+                  <p className="text-sm text-gray-700">
+                    Experience: {selectedTailor.experience} years
+                  </p>
+                  <p className="text-sm text-gray-700">
+                    Tailor ID: {selectedTailor._id}
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
 
-        {/* Extra Notes */}
-        <label className="block mb-3">
-          <span className="text-gray-700 font-medium">Extra Notes</span>
-          <textarea
-            name="extraNotes"
-            value={formData.extraNotes}
-            onChange={handleChange}
-            placeholder="Any additional instructions..."
-            className="mt-1 block w-full rounded-lg border border-gray-300 p-2 focus:ring-2 focus:ring-pink-400 focus:outline-none resize-none text-gray-800"
-            rows={3}
-          />
-        </label>
+        {step === 4 && (
+          <div className="space-y-4">
+            <h2 className="font-bold text-xl text-gray-800">
+              Review Your Details
+            </h2>
+            <div className="bg-gray-100 p-4 rounded-lg">
+              <p>
+                <strong>UserID:</strong> {formData.userID}
+              </p>
+              <p>
+                <strong>Kurti Length:</strong> {formData.kurtiLength}
+              </p>
+              <p>
+                <strong>Sleeve Type:</strong> {formData.sleeveType}
+              </p>
+              <p>
+                <strong>Neck Design:</strong> {formData.neckDesign}
+              </p>
+              <p>
+                <strong>Fabric Type:</strong> {formData.fabricType}
+              </p>
+              <p>
+                <strong>Notes:</strong> {formData.extraNotes}
+              </p>
+              <p>
+                <strong>Chest:</strong> {formData.chest}
+              </p>
+              <p>
+                <strong>Waist:</strong> {formData.waist}
+              </p>
+              <p>
+                <strong>Hips:</strong> {formData.hips}
+              </p>
+              <p>
+                <strong>Length:</strong> {formData.length}
+              </p>
+              {formData.referenceImage && (
+                <p>
+                  <strong>Reference Image:</strong>{" "}
+                  {formData.referenceImage.name}
+                </p>
+              )}
+            </div>
 
-        {/* Reference Image */}
-        <label className="block mb-4">
-          <span className="text-gray-700 font-medium">Reference Image</span>
-          <input
-            type="file"
-            name="referenceImage"
-            accept="image/*"
-            onChange={handleChange}
-            className="mt-1 block w-full text-gray-800"
-          />
-        </label>
+            {selectedTailor && (
+              <div className="mt-8 border-t pt-6">
+                <h2 className="text-xl font-semibold mb-3">Selected Tailor</h2>
+                <div className="border rounded-lg p-4 bg-gray-50 shadow-md">
+                  <h3 className="text-lg font-bold">{selectedTailor.name}</h3>
+                  <p className="text-sm text-gray-700">
+                    Location: {selectedTailor.address}
+                  </p>
+                  <p className="text-sm text-gray-700">
+                    Experience: {selectedTailor.experience} years
+                  </p>
+                  <p className="text-sm text-gray-700">
+                    Tailor ID: {selectedTailor._id}
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
 
-        {/* Submit */}
-        <button
-          type="submit"
-          disabled={submitting}
-          className="w-full bg-pink-500 text-white py-2 px-4 rounded-lg font-semibold shadow hover:bg-pink-600 transition disabled:opacity-60 disabled:cursor-not-allowed"
-        >
-          {submitting ? "Saving..." : "Submit Details"}
-        </button>
+        {/* Navigation Buttons */}
+        <div className="flex justify-between pt-4">
+          {step > 1 && (
+            <button
+              type="button"
+              onClick={prevStep}
+              className="px-5 py-2 rounded-lg bg-gray-200 hover:bg-gray-300"
+            >
+              Back
+            </button>
+          )}
+          {step < 4 ? (
+            <button
+              type="button"
+              onClick={nextStep}
+              className="px-5 py-2 rounded-lg bg-black text-white hover:bg-gray-800"
+            >
+              Next
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={handleSubmit}
+              className="px-5 py-2 rounded-lg bg-green-600 text-white hover:bg-green-700"
+            >
+              ✅ Submit Details
+            </button>
+          )}
+        </div>
       </form>
     </div>
   );

@@ -5,11 +5,11 @@ export async function GET(req:Request) {
   try {
     const { db } = await connectToDatabase();  // connect to DB
 const { searchParams } = new URL(req.url);
-    const userId = searchParams.get("userID");
+    const tailorID = searchParams.get("tailorID");
 
 
     const collection = db.collection("adddetails");
-    const data = await collection.find({userID:userId}).toArray();
+    const data = await collection.find({TailorID:tailorID}).toArray();
 
     return NextResponse.json({ success: true, data });
   } catch (error: any) {

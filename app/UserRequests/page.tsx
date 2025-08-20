@@ -10,7 +10,7 @@ export default function ViewDetailsPage() {
     async function fetchDetails() {
       try {
         const res = await fetch(
-          "/api/adddetails?userID=" + localStorage.getItem("UserID")
+          "/api/FetchUserReq?tailorID=" + localStorage.getItem("UserID")
         );
         const data = await res.json();
         if (data.success) {
@@ -25,17 +25,21 @@ export default function ViewDetailsPage() {
     fetchDetails();
   }, []);
 
-  const handleUpdate = async (id: string, newStatus: string) => {
+  const handleUpdate = async (id: string, newPrice: string, newStatus: string) => {
     try {
-      const res = await fetch("/api/UpdateTailorStatus", {
+      const res = await fetch("/api/UpdateUserStatus", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id, UsersStatus: newStatus }),
+        body: JSON.stringify({ id, Price: newPrice, status: newStatus }),
       });
-
       const data = await res.json();
       if (data.success) {
         alert("Details updated successfully!");
+        setDetails((prev) =>
+          prev.map((d) =>
+            d._id === id ? { ...d, Price: newPrice, status: newStatus } : d
+          )
+        );
       }
     } catch (err) {
       console.error(err);
@@ -46,8 +50,10 @@ export default function ViewDetailsPage() {
   if (loading) return <p className="text-center mt-10 text-lg">Loading...</p>;
 
   return (
-    <div className="max-w-4xl mx-auto p-6">
-      <h1 className="text-2xl font-bold mb-6 text-center">All AddDetails</h1>
+    <div className="max-w-4xl mx-auto p-6 bg-gray-50 min-h-screen">
+      <h1 className="text-2xl font-bold mb-6 text-center text-gray-800">
+        All Users Details
+      </h1>
 
       {details.length === 0 ? (
         <p className="text-center text-gray-500">No details found.</p>
@@ -56,13 +62,13 @@ export default function ViewDetailsPage() {
           {details.map((detail) => (
             <div
               key={detail._id}
-              className="border rounded-2xl text-white p-6 shadow-lg bg-gradient-to-br from-gray-900 to-gray-800 hover:shadow-xl transition"
+              className="border rounded-2xl text-gray-800 p-6 shadow-md bg-white hover:shadow-lg transition"
             >
               {/* Dress Details */}
-              <h2 className="text-lg font-semibold mb-3 border-b border-gray-700 pb-1">
+              <h2 className="text-lg font-semibold mb-3 border-b border-gray-200 pb-1">
                 Dress Details
               </h2>
-              <div className="space-y-2 text-sm">
+              <div className="space-y-1 text-sm">
                 <p><b>Kurtis Length:</b> {detail.kurtiLength}</p>
                 <p><b>Sleeve Type:</b> {detail.sleeveType}</p>
                 <p><b>Neck Design:</b> {detail.neckDesign}</p>
@@ -73,20 +79,7 @@ export default function ViewDetailsPage() {
                 <p><b>Hips:</b> {detail.hips}</p>
                 <p><b>Length:</b> {detail.length}</p>
                 <p><b>UserID:</b> {detail.userID}</p>
-                <p>
-                  <b>Status:</b>
-                  <span
-                    className={`ml-2 px-2 py-0.5 rounded text-xs ${
-                      detail.status === "Approved"
-                        ? "bg-green-600"
-                        : detail.status === "Pending"
-                        ? "bg-yellow-600"
-                        : "bg-red-600"
-                    }`}
-                  >
-                    {detail.status || "N/A"}
-                  </span>
-                </p>
+                <p><b>User Status:</b> {detail.UsersStatus}</p>
               </div>
 
               {/* Reference Image */}
@@ -96,35 +89,35 @@ export default function ViewDetailsPage() {
                   <img
                     src={detail.referenceImage}
                     alt="Reference"
-                    className="mt-2 rounded-lg w-full h-40 object-cover border border-gray-700"
+                    className="mt-2 rounded-lg w-full h-40 object-cover border border-gray-200"
                   />
                 </div>
               )}
 
-              <p className="text-2xl mt-5">
-                <b>Price:</b> {detail.Price}
-              </p>
-
-              {/* Tailor Info */}
-              <h2 className="text-lg font-semibold mt-5 mb-3 border-b border-gray-700 pb-1">
+              {/* Tailor Info
+              <h2 className="text-lg font-semibold mt-5 mb-3 border-b border-gray-200 pb-1">
                 Tailor Information
               </h2>
-              <div className="space-y-2 text-sm">
+              <div className="space-y-1 text-sm">
                 <p><b>Tailor Name:</b> {detail.TailorName || "N/A"}</p>
                 <p><b>Tailor ID:</b> {detail.TailorID || "N/A"}</p>
                 <p><b>Email:</b> {detail.TailorEmail || "N/A"}</p>
                 <p><b>Phone:</b> {detail.TailorPhone || "N/A"}</p>
                 <p><b>Address:</b> {detail.TailorAddress || "N/A"}</p>
-              </div>
+              </div> */}
 
-              {/* Status Update */}
-             {detail.status == "Approved"  && <div className="border rounded-md p-3 mt-5 text-black bg-gray-50">
+              {/* Update Section */}
+              <div className="border rounded-md p-3 mt-5 bg-gray-50">
                 <label className="block text-sm mb-2">
                   <b>Status:</b>
                   <select
-                    value={detail.UsersStatus|| "Pending"}
+                    defaultValue={detail.status}
                     onChange={(e) =>
-                      handleUpdate(detail._id, e.target.value)
+                      setDetails((prev) =>
+                        prev.map((d) =>
+                          d._id === detail._id ? { ...d, status: e.target.value } : d
+                        )
+                      )
                     }
                     className="ml-2 border rounded px-2 py-1 text-sm"
                   >
@@ -133,7 +126,30 @@ export default function ViewDetailsPage() {
                     <option value="Rejected">Rejected</option>
                   </select>
                 </label>
-              </div>}
+
+                <label className="block text-sm mb-3">
+                  <b>Price:</b>
+                  <input
+                    type="number"
+                    defaultValue={detail.Price || ""}
+                    onChange={(e) =>
+                      setDetails((prev) =>
+                        prev.map((d) =>
+                          d._id === detail._id ? { ...d, Price: e.target.value } : d
+                        )
+                      )
+                    }
+                    className="ml-2 border rounded px-2 py-1 text-sm w-24"
+                  />
+                </label>
+
+                <button
+                  onClick={() => handleUpdate(detail._id, detail.Price, detail.status)}
+                  className="bg-blue-600 text-white px-4 py-1 rounded hover:bg-blue-700 transition"
+                >
+                  Update
+                </button>
+              </div>
             </div>
           ))}
         </div>
