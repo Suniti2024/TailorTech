@@ -1,0 +1,15 @@
+.gradientBg {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.cardHover {
+  transition: all 0.3s ease;
+  border: 2px solid #3b82f6; /* Blue border */
+  border-radius: 8px;        /* Optional: smooth corners */
+}
+
+.cardHover:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+  border-color: #2563eb; /* Darker blue on hover */
+}

@@ -1,0 +1,30 @@
+/* app/layout.css - global background + fonts (Light Theme) */
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Playfair+Display:wght@400;700&display=swap");
+
+:root {
+  --bg-1: hsl(0, 0%, 100%);   /* pure white */
+  --bg-2: #f9f9f9;            /* soft white-gray */
+  --neon-cyan: #00bcd4;       /* softened cyan */
+  --neon-pink: #e91e63;       /* softened pink */
+}
+
+html,
+body {
+  padding: 0;
+  margin: 0;
+  font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  background: radial-gradient(circle at 20% 80%, rgba(85, 210, 227, 0.08) 0%, transparent 25%),
+              radial-gradient(circle at 80% 20%, rgba(233, 30, 99, 0.08) 0%, transparent 25%),
+              linear-gradient(135deg, var(--bg-1) 0%, var(--bg-2) 50%, var(--bg-1) 100%);
+  color: #e6e0e0;   /* dark text on light background */
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* small helper classes you may find useful (optional) */
+.center-screen {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

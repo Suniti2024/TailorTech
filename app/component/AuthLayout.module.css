@@ -1,0 +1,34 @@
+.pageWrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100vh;
+  background: rgb(169, 243, 207); /* keep your theme */
+ 
+}
+
+.header {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+ 
+  /* added small margin to keep minimal gap between logo and container */
+}
+
+.logo {
+  object-fit: contain;
+  filter: drop-shadow(0px 0px 10px #00e5ff); /* neon glow */
+  max-height: 400px; /* optional: restricts logo height to avoid big gap */
+}
+.main-content-container {
+  margin-top: 0;
+  margin-bottom: 2px;
+}
+.main {
+  flex: 1;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start; /* changed from center → starts closer to top under logo */
+  margin-top: 1px; /* keeps only minimal gap */
+}

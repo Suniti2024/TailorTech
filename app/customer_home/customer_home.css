@@ -1,0 +1,20 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+
+:root { --app-font: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial; }
+
+
+.font-inter { font-family: var(--app-font); }
+
+
+/* Dropdown helper */
+.dropdown { display: none; }
+.dropdown.show { display: block; }
+
+
+/* Small accessibility focus states */
+button:focus { outline: 2px solid rgba(79,70,229,0.2); outline-offset: 2px; }
+
+
+/* Hero button transition utility */
+.transition-all { transition: all 0.2s ease-in-out; }
