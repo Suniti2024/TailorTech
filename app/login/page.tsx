@@ -163,7 +163,7 @@ console.log(data);
         localStorage.setItem("UserID", data?.user?.userID);
 
         // Redirect after login success
-        router.push("/dashboard"); 
+        router.push("/customer_home"); 
         // 👉 or use "/profile" if you want direct profile redirect
       } else {
         setError(data.message || "Login failed");
@@ -201,7 +201,7 @@ console.log(data);
         </form>
         <div style={styles.footer}>
           Don’t have an account?{" "}
-          <a href="/register" style={styles.link}>
+          <a href="/registration" style={styles.link}>
             Sign Up
           </a>
         </div>

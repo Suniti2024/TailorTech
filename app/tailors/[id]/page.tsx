@@ -25,7 +25,7 @@ export default async function TailorProfile({ params: { id } }: TailorProfilePro
 
     tailor = await db
       .collection<Tailor>('tailors')
-      .findOne({ _id: new ObjectId(id) });
+      .findOne({ id: new ObjectId(id) });
 
   } catch (error) {
     console.error('Error fetching tailor:', error);

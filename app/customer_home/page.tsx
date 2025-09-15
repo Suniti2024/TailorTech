@@ -3,13 +3,21 @@
 
 import React from "react";
 import Header from "../component/Header";
+import { useRouter } from "next/router";
 
 
-export default function Page() {
-const getStarted = () => {
-alert("Welcome! Let's get you started with our amazing platform!");
-};
+// export default function Page() {
+// const getStarted = () => {
+// alert("Welcome! Let's get you started with our amazing platform!");
+// };
+export default function GetStartedButton() {
+  const router = useRouter();
 
+  const getStarted = () => {
+    alert("Welcome! Let's get you started with our amazing platform!");
+    router.push("/addDetails"); // 👈 change "/nextpage" to the page you want
+    
+  };
 
 return (
 <>
@@ -24,9 +32,15 @@ Welcome to <span className="text-indigo-600">TailorTech</span>
 <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto leading-relaxed">
 A structured digital platform designed to connect clients with verified local freelance tailors. Our system incorporates artificial intelligence for body measurement, real-time client–tailor matchmaking, personalized clothing recommendations, and location-based search functionalities.
 </p>
-<button onClick={getStarted} className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-4 px-8 rounded-lg text-lg transition-colors shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-200">
-Get Started
-</button>
+<button
+
+      onClick={getStarted}
+      className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-4 px-8 rounded-lg text-lg transition-colors shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-200"
+    >
+      Get Started
+      
+    </button>
+
 </div>
 
 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">

@@ -14,7 +14,8 @@ export default function ChoicePage() {
 
         <div className={styles.cardsContainer}>
           {/* Tailor block */}
-          <Link href="/register?role=tailor" className={styles.card}>
+          {/* <Link href="/register?role=tailor" className={styles.card}> */}
+           <Link href="/t-registration" className={styles.card}>
             <div className={styles.imagePlaceholder}>
               <img src="/tailor.png"   alt="Tailor" />
             </div>
@@ -22,7 +23,8 @@ export default function ChoicePage() {
           </Link>
 
           {/* Customer block */}
-          <Link href="/register?role=customer" className={styles.card}>
+          {/* <Link href="/register?role=customer" className={styles.card}> */}
+          <Link href="/registration" className={styles.card}>
             <div className={styles.imagePlaceholder}>
               <img src="/customer.png" alt="Customer" />
             </div>
