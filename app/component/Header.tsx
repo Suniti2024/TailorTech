@@ -13,14 +13,11 @@ export default function Header() {
           <div className="flex items-center">
             <Link href="/" className="flex items-center">
               {/* Replace with your actual logo (keep it inside /public/logo.png) */}
-         <img
-  src="/logo.png"
-  alt="TailorTech Logo"
-  className="h-40 w-auto "
-  
-/>
-
-
+              <img
+                src="/logo.png"
+                alt="TailorTech Logo"
+                className="h-40 w-auto "
+              />
             </Link>
           </div>
 
