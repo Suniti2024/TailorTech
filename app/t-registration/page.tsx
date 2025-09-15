@@ -180,7 +180,7 @@ export default function RegisterPage() {
         <p className="mt-4 text-center text-cyan-400">
           Already have an account?{' '}
           <span
-            onClick={() => router.push('/t-login')}
+            onClick={() => router.push('/logiin')}
             className="underline cursor-pointer hover:text-cyan-300"
           >
             Login
