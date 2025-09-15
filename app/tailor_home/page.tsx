@@ -7,12 +7,11 @@ export default function Page() {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement | null>(null);
   const [tailorID, settailorID] = useState("");
-const router = useRouter();
+  const router = useRouter();
   const getTailorID = async () => {
     const taiID = localStorage.getItem("UserID");
     return settailorID(taiID || "");
   };
-
 
   useEffect(() => {
     getTailorID();

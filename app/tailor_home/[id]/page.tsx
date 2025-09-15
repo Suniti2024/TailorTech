@@ -1,6 +1,6 @@
 import { connectToDatabase } from '@/utils/mongodb';
 import { ObjectId } from 'mongodb';
-import { Tailor } from '../../types/tailor';
+import { Tailor } from '../../../types/tailor';
 import Link from 'next/link';
 
 interface TailorProfileProps {
@@ -23,11 +23,9 @@ export default async function TailorProfile({ params: { id } }: TailorProfilePro
       );
     }
 
- 
-
     tailor = await db
       .collection<Tailor>('tailors')
-      .findOne({ id: new ObjectId(id) });
+      .findOne({ _id: new ObjectId(id) });
 
   } catch (error) {
     console.error('Error fetching tailor:', error);
